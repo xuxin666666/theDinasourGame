@@ -26,7 +26,7 @@ function Barrier(canvas, image, x, y, w, h) {
 }
 Barrier.prototype.randomSpace = function () {
     var num = Math.random() * 10
-    if (num <= 6) return 20
+    if (num <= 6) return 30
     else if (num <= 9) return 120
     else return 240
 }
