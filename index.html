@@ -211,7 +211,7 @@
         }
         createBarrierInterval = setInterval(() => {
             createBarriers()
-        }, 5000 / speed);
+        }, 6000 / speed);
         moveBarrierInterval = setInterval(() => {
             if (!isPause && start) {
                 barrierctxBuffer.clearRect(0, 0, 1200, 500)
@@ -250,27 +250,31 @@
                     scorectx.drawImage(scoreCanvasBuffer, 0, 0)
                     if (score === 500) {
                         speed = 7
+                        clearInterval(createBarrierInterval)
                         createBarrierInterval = setInterval(() => {
                             createBarriers()
-                        }, 5000 / speed);
+                        }, 6000 / speed);
                     }
                     if (score === 1000) {
                         speed = 8
+                        clearInterval(createBarrierInterval)
                         createBarrierInterval = setInterval(() => {
                             createBarriers()
-                        }, 5000 / speed);
+                        }, 6000 / speed);
                     }
                     if (score === 2000) {
                         speed = 9
+                        clearInterval(createBarrierInterval)
                         createBarrierInterval = setInterval(() => {
                             createBarriers()
-                        }, 5000 / speed);
+                        }, 6000 / speed);
                     }
                     if (score === 3000) {
                         speed = 10
+                        clearInterval(createBarrierInterval)
                         createBarrierInterval = setInterval(() => {
                             createBarriers()
-                        }, 5000 / speed);
+                        }, 6000 / speed);
                     }
                 }
             }, 100)
