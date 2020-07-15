@@ -30,7 +30,7 @@
 <script>
     var start = false
     function playgame() {
-        var speed = 6, isPause = false, score = 0, gameOver = false
+        var speed = 6, isPause = false, score = 0, gameOver = false, DOWN = true, UP = true
         var bgInterval, dinasourInterval, dinasourUpInterval, createCloudInterval, moveCloudInterval, createBarrierInterval, moveBarrierInterval, scoreInterval, timeKeeping
         window.onkeydown = function starting(e) {
             if (e.keyCode === 32 || e.keyCode === 38) {
@@ -101,73 +101,77 @@
             }, 80);
             var flag = true, flag1 = true, flag2 = true, y = 0, ymove = 8
             document.onkeydown = function (e) {
-                if (e.keyCode === 32 || e.keyCode === 38) {
-                    if (flag && dinasour.canUp) {
-                        clearInterval(dinasourInterval)
-                        dinasourUpInterval = setInterval(() => {
-                            if (!isPause && start) {
-                                if (y === -200 && flag1) ymove = 4
-                                else if (y === -244 && flag1) ymove = 1
-                                if (y === -244 && !flag1) ymove = 4
-                                else if (y === -200 && !flag1) ymove = 8
-                                if (flag1) y -= ymove
-                                else y += ymove
-                                if (y === -250) flag1 = false
-                                if (y === 0) {
-                                    flag = true
-                                    flag1 = true
-                                    clearInterval(dinasourUpInterval)
-                                    dinasourInterval = setInterval(() => {
-                                        if (!isPause && start) {
-                                            dinasourctx.clearRect(0, 0, 1200, 500)
-                                            dinasour.autoMove()
-                                        }
-                                    }, 80);
-                                }
-                                dinasourctx.clearRect(0, 0, 1200, 500)
-                                dinasour.Up(y)
-                            }
-                        }, 6);
-                        flag = false
-                    }
-                } else if (e.keyCode === 40) {
-                    if (flag2) {
-                        clearInterval(dinasourUpInterval)
-                        var yy = y, yyy = y / 8
-                        var quickDown = setInterval(() => {
-                            if (!isPause && start) {
-                                yy -= yyy
-                                dinasourctx.clearRect(0, 0, 1200, 500)
-                                dinasour.Up(Math.floor(yy))
-                                if (yy > -1) clearInterval(quickDown)
-                            }
-                        }, 2)
-                        setTimeout(() => {
+                if(DOWN) {
+                    if (e.keyCode === 32 || e.keyCode === 38) {
+                        if (flag && dinasour.canUp) {
                             clearInterval(dinasourInterval)
-                            flag = true; y = 0; flag1 = true, ymove = 8
-                            dinasour.Down(e.keyCode)
-                            dinasourInterval = setInterval(() => {
+                            dinasourUpInterval = setInterval(() => {
                                 if (!isPause && start) {
+                                    if (y === -200 && flag1) ymove = 4
+                                    else if (y === -244 && flag1) ymove = 1
+                                    if (y === -244 && !flag1) ymove = 4
+                                    else if (y === -200 && !flag1) ymove = 8
+                                    if (flag1) y -= ymove
+                                    else y += ymove
+                                    if (y === -250) flag1 = false
+                                    if (y === 0) {
+                                        flag = true
+                                        flag1 = true
+                                        clearInterval(dinasourUpInterval)
+                                        dinasourInterval = setInterval(() => {
+                                            if (!isPause && start) {
+                                                dinasourctx.clearRect(0, 0, 1200, 500)
+                                                dinasour.autoMove()
+                                            }
+                                        }, 80);
+                                    }
                                     dinasourctx.clearRect(0, 0, 1200, 500)
-                                    dinasour.autoMove()
+                                    dinasour.Up(y)
                                 }
-                            }, 80);
-                        }, 16)
-                        flag2 = false
+                            }, 6);
+                            flag = false
+                        }
+                    } else if (e.keyCode === 40) {
+                        if (flag2) {
+                            clearInterval(dinasourUpInterval)
+                            var yy = y, yyy = y / 8
+                            var quickDown = setInterval(() => {
+                                if (!isPause && start) {
+                                    yy -= yyy
+                                    dinasourctx.clearRect(0, 0, 1200, 500)
+                                    dinasour.Up(Math.floor(yy))
+                                    if (yy > -1) clearInterval(quickDown)
+                                }
+                            }, 2)
+                            setTimeout(() => {
+                                clearInterval(dinasourInterval)
+                                flag = true; y = 0; flag1 = true, ymove = 8
+                                dinasour.Down(e.keyCode)
+                                dinasourInterval = setInterval(() => {
+                                    if (!isPause && start) {
+                                        dinasourctx.clearRect(0, 0, 1200, 500)
+                                        dinasour.autoMove()
+                                    }
+                                }, 80);
+                            }, 16)
+                            flag2 = false
+                        }
                     }
                 }
             }
             document.onkeyup = function (e) {
-                if (e.keyCode === 40) {
-                    dinasour.Down(1)
-                    clearInterval(dinasourInterval)
-                    flag2 = true
-                    dinasourInterval = setInterval(() => {
-                        if (!isPause && start) {
-                            dinasourctx.clearRect(0, 0, 1200, 500)
-                            dinasour.autoMove()
-                        }
-                    }, 80);
+                if(UP) {
+                    if (e.keyCode === 40) {
+                        dinasour.Down(1)
+                        clearInterval(dinasourInterval)
+                        flag2 = true
+                        dinasourInterval = setInterval(() => {
+                            if (!isPause && start) {
+                                dinasourctx.clearRect(0, 0, 1200, 500)
+                                dinasour.autoMove()
+                            }
+                        }, 80);
+                    }
                 }
             }
         }
@@ -293,6 +297,8 @@
                     clearInterval(moveBarrierInterval)
                     clearInterval(scoreInterval)
                     clearInterval(timeKeeping)
+                    DOWN = false
+                    UP = false
                     alert('Game Over!!!')
                     document.onkeydown = function starting(e) {
                         if (e.keyCode === 32 || e.keyCode === 38) {
