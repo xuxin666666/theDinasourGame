@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+    </style>
+</head>
+
+<body onload="playgame()">
+    <canvas id="bg" width="1200" height="500">你的浏览器不支持canvas，请升级浏览器或换个浏览器</canvas>
+    <canvas id="cloud" width="1200" height="500"></canvas>
+    <canvas id="barrier" width="1200" height="500"></canvas>
+    <canvas id="dinasour" width="1200" height="500"></canvas>
+    <canvas id="score" width="1200" height="500"></canvas>
+</body>
+<script src="js/bg.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/dinasour.js"></script>
+<script src="js/barrier.js"></script>
+<script src="js/score.js"></script>
+<script>
+    var start = false
+    function playgame() {
+        var speed = 6, isPause = false, score = 0, gameOver = false
+        var bgInterval, dinasourInterval, dinasourUpInterval, createCloudInterval, moveCloudInterval, createBarrierInterval, moveBarrierInterval, scoreInterval, timeKeeping
+        window.onkeydown = function starting(e) {
+            if (e.keyCode === 32 || e.keyCode === 38) {
+                start = true
+                window.removeEventListener(onkeydown, starting, false)
+            }
+        }
+
+        var bgCanvas = document.getElementById('bg')
+        var bgImage = 'image/ground.png'
+        drawBgImage(bgCanvas, bgImage, moveBg)
+        function moveBg(image) {
+            bgInterval = setInterval(() => {
+                if (!isPause && start)
+                    moveBgImage(bgCanvas, image, speed)
+            }, 6);
+        }
+
+        var cloudCanvas = document.getElementById('cloud')
+        var cloudCanvasBuffer = document.createElement('canvas')
+        cloudCanvasBuffer.width = 1200
+        cloudCanvasBuffer.height = 500
+        var cloudctx = cloudCanvas.getContext('2d')
+        var cloudctxBuffer = cloudCanvasBuffer.getContext('2d')
+        var cloudImage = 'image/cloud.png'
+        var cloudList = [], cloud, space = 0, up = 0
+        setTimeout(() => {
+            cloudList[0] = drawCloud(cloudCanvasBuffer, cloudImage, space, up)
+            cloudList[0].draw()
+            cloudctx.drawImage(cloudCanvasBuffer, 0, 0)
+        }, 50);
+        createCloudInterval = setInterval(() => {
+            if (!isPause && start) {
+                space = RandomSpace()[0]
+                up = RandomSpace()[1]
+                cloud = drawCloud(cloudCanvasBuffer, cloudImage, space, up)
+                cloudList.push(cloud)
+            }
+        }, 4000);
+        moveCloudInterval = setInterval(() => {
+            if (!isPause && start) {
+                cloudctxBuffer.clearRect(0, 0, 1200, 500)
+                for (var i = 0; i < cloudList.length; i++) {
+                    if (cloudList[i].isOut()) cloudList.splice(i, 1)
+                    cloudList[i].move()
+                    cloudList[i].draw()
+                }
+                setTimeout(() => {
+                    cloudctx.clearRect(0, 0, 1200, 500)
+                    cloudctx.drawImage(cloudCanvasBuffer, 0, 0)
+                }, 30)
+            }
+        }, 50);
+
+
+        var dinasourCanvas = document.getElementById('dinasour')
+        var dinasourctx = dinasourCanvas.getContext('2d')
+        var dinasourImage = new Image()
+        var dinasour
+        dinasourImage.onload = function () {
+            dinasour = drawDinasour(dinasourCanvas, dinasourImage)
+            dinasour.Up(0)
+            dinasourInterval = setInterval(() => {
+                if (!isPause && start) {
+                    dinasourctx.clearRect(0, 0, 1200, 500)
+                    dinasour.autoMove()
+                }
+            }, 80);
+            var flag = true, flag1 = true, flag2 = true, y = 0, ymove = 8
+            document.onkeydown = function (e) {
+                if (e.keyCode === 32 || e.keyCode === 38) {
+                    if (flag && dinasour.canUp) {
+                        clearInterval(dinasourInterval)
+                        dinasourUpInterval = setInterval(() => {
+                            if (!isPause && start) {
+                                if (y === -200 && flag1) ymove = 4
+                                else if (y === -244 && flag1) ymove = 1
+                                if (y === -244 && !flag1) ymove = 4
+                                else if (y === -200 && !flag1) ymove = 8
+                                if (flag1) y -= ymove
+                                else y += ymove
+                                if (y === -250) flag1 = false
+                                if (y === 0) {
+                                    flag = true
+                                    flag1 = true
+                                    clearInterval(dinasourUpInterval)
+                                    dinasourInterval = setInterval(() => {
+                                        if (!isPause && start) {
+                                            dinasourctx.clearRect(0, 0, 1200, 500)
+                                            dinasour.autoMove()
+                                        }
+                                    }, 80);
+                                }
+                                dinasourctx.clearRect(0, 0, 1200, 500)
+                                dinasour.Up(y)
+                            }
+                        }, 6);
+                        flag = false
+                    }
+                } else if (e.keyCode === 40) {
+                    if (flag2) {
+                        clearInterval(dinasourUpInterval)
+                        var yy = y, yyy = y / 8
+                        var quickDown = setInterval(() => {
+                            if (!isPause && start) {
+                                yy -= yyy
+                                dinasourctx.clearRect(0, 0, 1200, 500)
+                                dinasour.Up(Math.floor(yy))
+                                if (yy > -1) clearInterval(quickDown)
+                            }
+                        }, 2)
+                        setTimeout(() => {
+                            clearInterval(dinasourInterval)
+                            flag = true; y = 0; flag1 = true, ymove = 8
+                            dinasour.Down(e.keyCode)
+                            dinasourInterval = setInterval(() => {
+                                if (!isPause && start) {
+                                    dinasourctx.clearRect(0, 0, 1200, 500)
+                                    dinasour.autoMove()
+                                }
+                            }, 80);
+                        }, 16)
+                        flag2 = false
+                    }
+                }
+            }
+            document.onkeyup = function (e) {
+                if (e.keyCode === 40) {
+                    dinasour.Down(1)
+                    clearInterval(dinasourInterval)
+                    flag2 = true
+                    dinasourInterval = setInterval(() => {
+                        if (!isPause && start) {
+                            dinasourctx.clearRect(0, 0, 1200, 500)
+                            dinasour.autoMove()
+                        }
+                    }, 80);
+                }
+            }
+        }
+        dinasourImage.src = 'image/dinasour.png'
+
+        var barrierCanvas = document.getElementById('barrier')
+        var barrierctx = barrierCanvas.getContext('2d')
+        var barrierCanvasBuffer = document.createElement('canvas')
+        barrierCanvasBuffer.width = 1200
+        barrierCanvasBuffer.height = 500
+        var barrierctxBuffer = barrierCanvasBuffer.getContext('2d')
+        var barrierImage1 = 'image/barrier1.png'
+        var barrierImage2 = 'image/barrier2.png'
+        var barrierList = [], barrier
+        function createBarriers() {
+            if (!isPause && start) {
+                var enemy = RandomBarrier()
+                switch (enemy) {
+                    case 11:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage1, 0, 0, 45, 99)
+                        break
+                    case 12:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage1, 45, 0, 91, 99)
+                        break
+                    case 13:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage1, 136, 0, 138, 99)
+                        break
+                    case 21:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage2, 0, 0, 60, 129)
+                        break
+                    case 22:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage2, 60, 0, 125, 129)
+                        break
+                    case 23:
+                        barrier = createBarrier(barrierCanvasBuffer, barrierImage2, 185, 0, 188, 129)
+                        break
+                }
+                barrierList.push(barrier)
+            }
+
+        }
+        createBarrierInterval = setInterval(() => {
+            createBarriers()
+        }, 5000 / speed);
+        moveBarrierInterval = setInterval(() => {
+            if (!isPause && start) {
+                barrierctxBuffer.clearRect(0, 0, 1200, 500)
+                for (var i = 0; i < barrierList.length; i++) {
+                    if (barrierList[i].isOut()) barrierList.splice(i, 1)
+                    barrierList[i].move(speed)
+                    barrierList[i].draw()
+                    if (isHitByDinasour(barrierList[i], dinasour)) {
+                        gameOver = true
+                    }
+                }
+                barrierctx.clearRect(0, 0, 1200, 500)
+                barrierctx.drawImage(barrierCanvasBuffer, 0, 0)
+            }
+        }, 6);
+
+        var scoreCanvas = document.getElementById('score')
+        var scoreCanvasBuffer = document.createElement('canvas')
+        scoreCanvasBuffer.width = 1200
+        scoreCanvasBuffer.height = 500
+        var scorectxBuffer = scoreCanvasBuffer.getContext('2d')
+        var scorectx = scoreCanvas.getContext('2d')
+        var scoreImage = 'image/scores.png'
+        var sImage = new Image()
+        sImage.onload = function () {
+            scorectxBuffer.clearRect(0, 0, 1200, 500)
+            drawScore(scoreCanvasBuffer, sImage, score)
+            scorectx.clearRect(0, 0, 1200, 500)
+            scorectx.drawImage(scoreCanvasBuffer, 0, 0)
+            scoreInterval = setInterval(() => {
+                if (!isPause && start) {
+                    score += 1
+                    scorectxBuffer.clearRect(0, 0, 1200, 500)
+                    drawScore(scoreCanvasBuffer, sImage, score)
+                    scorectx.clearRect(0, 0, 1200, 500)
+                    scorectx.drawImage(scoreCanvasBuffer, 0, 0)
+                    if (score === 500) {
+                        speed = 7
+                        createBarrierInterval = setInterval(() => {
+                            createBarriers()
+                        }, 5000 / speed);
+                    }
+                    if (score === 1000) {
+                        speed = 8
+                        createBarrierInterval = setInterval(() => {
+                            createBarriers()
+                        }, 5000 / speed);
+                    }
+                    if (score === 2000) {
+                        speed = 9
+                        createBarrierInterval = setInterval(() => {
+                            createBarriers()
+                        }, 5000 / speed);
+                    }
+                    if (score === 3000) {
+                        speed = 10
+                        createBarrierInterval = setInterval(() => {
+                            createBarriers()
+                        }, 5000 / speed);
+                    }
+                }
+            }, 100)
+        }
+        sImage.src = scoreImage
+
+        timeKeeping = setInterval(() => {
+            if (start) {
+                if (gameOver) {
+                    clearInterval(bgInterval)
+                    clearInterval(dinasourInterval)
+                    clearInterval(dinasourUpInterval)
+                    clearInterval(createCloudInterval)
+                    clearInterval(moveCloudInterval)
+                    clearInterval(createBarrierInterval)
+                    clearInterval(moveBarrierInterval)
+                    clearInterval(scoreInterval)
+                    clearInterval(timeKeeping)
+                    alert('Game Over!!!')
+                    document.onkeydown = function starting(e) {
+                        if (e.keyCode === 32 || e.keyCode === 38) {
+                            playgame()
+                            document.removeEventListener(onkeydown, starting, false)
+                        }
+                    }
+                }
+            }
+        }, 10)
+        document.addEventListener('visibilitychange', function () {
+            document.hidden ? isPause = true : isPause = false
+        })
+    }
+
+</script>
+
+</html>
